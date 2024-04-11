@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Table Generator</title>
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-red-800">
+    <div class="container mx-auto p-4">
+     <label class="block text-yellow-200 text-sm font-bold mb-2" for="timings">IT IS MANDATORY TO FILL ALL FIELDS.</label> 
+       <form id="timetableForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"> 
+          <div class="mb-6"> 
+               <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="timings">Batch Name :</label>
+               <input id="batchNameInput" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                type="text" placeholder="Enter Batch Name">
+          </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="timings">Lecture Timings :</label>
+                <div id="timingInputs" class="grid gap-6 mb-6 md:grid-cols-2">
+                    <!-- Timing slots will be added dynamically here -->
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="subjects">Lecture Subjects :</label>
+                <div id="subjectInputs" class="grid gap-6 mb-6 md:grid-cols-2">
+                    <!-- Subjects will be added dynamically here -->
+                </div>
+            </div>
+            <div class="flex justify-center">
+            <button id="submitBtn" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Generate Time Table</button>
+            </div>
+        </form>
+        <div id="loader" class="hidden bg-gray-500 bg-opacity-50 fixed top-0 left-0 w-full h-full flex justify-center items-center">
+            <div class="loader animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-purple-500"></div>
+            <img src="https://www.svgrepo.com/show/509001/avatar-thinking-9.svg"  class="rounded-full h-28 w-28">
+        </div>
+        <div id="timetableResult" class="hidden mt-8">
+            <!-- Time table will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const batchNameInput = document.getElementById('batchNameInput');
+            const form = document.getElementById('timetableForm');
+            const timingInputsContainer = document.getElementById('timingInputs');
+            const subjectInputsContainer = document.getElementById('subjectInputs');
+            const submitBtn = document.getElementById('submitBtn');
+            const loader = document.getElementById('loader');
+            const timetableResult = document.getElementById('timetableResult');
+
+
+          
+
+            // Function to generate a random integer between min and max (inclusive)
+            function getRandomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            // Function to shuffle an array
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            // Function to generate time table
+            function generateTimeTable() {
+                loader.classList.remove('hidden');
+                timetableResult.classList.add('hidden');
+
+                // Simulating loading time with setTimeout
+                setTimeout(() => {
+                    const timings = Array.from(document.querySelectorAll('.timing-input')).map(input => input.value);
+                    const subjects = Array.from(document.querySelectorAll('.subject-input')).map(input => input.value);
+                    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const timetable = {};
+
+                    days.forEach(day => {
+                        timetable[day] = {};
+                        timings.forEach((timing, index) => {
+                            const randomSubjectIndex = getRandomInt(0, subjects.length - 1);
+                            
+                            timetable[day][timing] = subjects[randomSubjectIndex];
+                        });
+                    });
+                          
+                    
+                     // Store the batch name in sessionStorage
+                     const batchName = batchNameInput.value ;
+                    if (batchName !== "") {
+                        sessionStorage.setItem('batchName', batchName);
+                    }
+
+
+                    // Store the generated timetable in sessionStorage
+                    sessionStorage.setItem('timetable', JSON.stringify(timetable));
+
+                    // Redirect to the new page
+                    window.location.href = 'timetable.html';
+
+                }, 2000); // Simulated loading time
+            }
+
+            // Add timing input fields dynamically
+            for (let i = 0; i < 7; i++) {
+                const slotLabel = document.createTextNode(`Slot ${i + 1} : `); // Create text node for slot label
+                slotLabel.textContent = `Slot ${i + 1} : `;
+                timingInputsContainer.appendChild(slotLabel); // Append slot label
+
+                const timingInput = document.createElement('input');
+                timingInput.classList.add('bg-gray-50', 'border', 'border-gray-300', 'text-gray-900', 'text-sm', 'rounded-lg', 'focus:ring-blue-500', 'focus:border-blue-500', 'block', 'w-full', 'p-2.5', 'dark:bg-gray-700', 'dark:border-gray-600', 'dark:placeholder-gray-400', 'dark:text-white', 'dark:focus:ring-blue-500', 'dark:focus:border-blue-500', 'timing-input');
+                timingInput.type = 'text';
+                timingInput.placeholder = `Enter timing slot ${i + 1}`;
+                timingInputsContainer.appendChild(timingInput);
+
+                timingInputsContainer.appendChild(document.createElement('br')); // Add line break
+            }
+
+            // Add subject input fields dynamically
+            for (let i = 0; i < 10; i++) {
+                const subjectLabel = document.createTextNode(`Subject ${i + 1} : `); // Create text node for slot label
+                subjectInputsContainer.appendChild(subjectLabel); // Append slot label
+
+                const subjectInput = document.createElement('input');
+                subjectInput.classList.add('bg-gray-50', 'border', 'border-gray-300', 'text-gray-900', 'text-sm', 'rounded-lg', 'focus:ring-blue-500', 'focus:border-blue-500', 'block', 'w-full', 'p-2.5', 'dark:bg-gray-700', 'dark:border-gray-600', 'dark:placeholder-gray-400', 'dark:text-white', 'dark:focus:ring-blue-500', 'dark:focus:border-blue-500', 'subject-input');
+                subjectInput.type = 'text';
+                subjectInput.placeholder = `Enter subject ${i + 1}`;
+                subjectInputsContainer.appendChild(subjectInput);
+
+                subjectInputsContainer.appendChild(document.createElement('br')); // Add line break
+            }
+
+            // Event listener for submit button
+            submitBtn.addEventListener('click', generateTimeTable);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Time Table</title>
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-white-200">
+    <div class="container mx-auto p-4">
+        <div class="flex justify-center">
+        <h2 id="batchName" class="text-2xl mb-4"></h2>
+        </div>
+        <div id="timetableResult" class="relative overflow-x-auto shadow-md sm:rounded-lg mt-8">
+            <!-- Time table will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const timetableResult = document.getElementById('timetableResult');
+            const batchName = document.getElementById('batchName');
+
+            // Retrieve the generated timetable from sessionStorage
+            const timetable = JSON.parse(sessionStorage.getItem('timetable'));
+
+            const storedBatchName = sessionStorage.getItem('batchName');
+            if (storedBatchName && storedBatchName !== "") {
+                batchName.textContent = "TIME TABLE FOR BATCH : " + storedBatchName;
+            } else {
+                batchName.textContent = "BATCH : N/A";
+            }
+
+            // Display the timetable
+            let html = '<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">'; 
+            html += '<thead class="text-xs text-gray-700 font-bold uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"><tr><th class="px-6 py-4">Day / Timing</th>';
+            Object.keys(timetable['Monday']).forEach((timing, index) => {
+                html += `<th class="px-6 py-4">${timing}</th>`;
+                if (index === 3) { // Add the "Lunch Break" column after the 4th timing slot
+                    html += '<th class="px-6 py-4">Break</th>';
+                }
+            });
+            html += '</tr></thead><tbody>';
+            Object.keys(timetable).forEach(day => {
+                html += `<tr><td class="text-xs text-gray-700 font-bold uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 border px-6 py-4">${day}</td>`;
+                let lunchBreakAdded = false; // Flag to ensure lunch break column is added only once
+                Object.entries(timetable[day]).forEach(([key, value], index) => {
+                    html += `<td class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border px-6 py-4">${value}</td>`;
+                    if (index === 3 && !lunchBreakAdded) { // Add the "Lunch Break" cell after the 4th timing slot
+                        html += '<td class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border px-6 py-4">LUNCH </td>';
+                        lunchBreakAdded = true;
+                    }
+                });
+                // If lunch break is not added, add an empty cell
+                if (!lunchBreakAdded) {
+                    html += '<td class="border px-4 py-2"></td>';
+                }
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            timetableResult.innerHTML = html;
+        });
+    </script>
+</body>
+
+</html>
